@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS movies (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  year INTEGER NOT NULL,
+  genre TEXT,
+  imdbrating DECIMAL
+);
