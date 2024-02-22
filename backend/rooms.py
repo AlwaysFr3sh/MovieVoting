@@ -79,7 +79,7 @@ class RoomTracker():
     return self.rooms[room_key].get()
   
   def start_game(self, room_key: str) -> None:
-    rooms[room_key].lock()
+    self.rooms[room_key].lock()
 
   def submit_vote(self, sid: str, room_key: str, title: str, vote: bool) -> bool:
     assert sid in self.rooms[room_key].members # TODO: do better...

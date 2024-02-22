@@ -64,9 +64,10 @@ def join_room(sid, data):
   sio.emit("update_lobby", {"members" : room_members}, room=room_key)
 
 @sio.event
-def start_game(sid, room_key):
+def start_game(sid):
+  room_key = [room for room in sio.rooms(sid) if room != sid][0] #TODO This is a hack, this whole fucking backend sucks ass
   room_tracker.start_game(room_key)
-  sio.emit('start_game', randrange(10000), room=room_key)
+  sio.emit('start_game', {"seed" : randrange(10000)}, room=room_key)
 
 @sio.event
 def register_vote(sid, data):

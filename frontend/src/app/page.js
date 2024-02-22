@@ -3,11 +3,9 @@ import Image from "next/image";
 import styles from "./page.module.css";
 import Link from 'next/link';
 
-import { useState } from 'react';
-import { useRouter } from "next/navigation";
-
 import { createRoom } from "./actions.js"
 
+// TODO: no reason this shouldn't be a server side thingy
 /*
 on form submission we need to make a server call to create a session,
 we then need to take this session id and route to the lobby page
@@ -23,24 +21,29 @@ display the usernames of those who have joined the server
 // https://socket.io/how-to/use-with-react
 
 export default function Home() {
-  const router = useRouter();
-  const [userName, setUserName] = useState("");
 
-  // TODO: is this better or "server action"
-  // UPDATE: I am doing server action
   function handleSubmit(event) {
     console.log("validate stuff here bro");
   } 
 
-  // TODO: dont need username hook i dont think, we are just passing it to the action directly from the formdata
   return (
     <>
     <h1>Tom's Movie Decider App</h1> 
     <form onSubmit={ handleSubmit } action={ createRoom }>
-      <input type="text" placeholder="Enter your nickname" name="username" onChange={ (e) => setUserName(e.target.value) }></input>
+      <input type="text" placeholder="Enter your nickname" name="username"></input>
       <input type="submit" value="Create Session"></input>
     </form>
     </>
     
   );
 }
+
+/*
+
+On creating rooms
+
+I think i should have the endpoint return some additional token that is needed in order to control the lobby
+things like starting the game, and in the future, configuring genre and streaming service preferences, should have to be submitted with a special token
+so that randos can't hack it and stuff
+
+*/

@@ -14,6 +14,7 @@ async function getRoomKey() {
   return response.json();
 }
 
+// its weird that i need to do it this way
 export async function createRoom( formData ) {
   const data = await getRoomKey();
   const roomKey = data.room_key;

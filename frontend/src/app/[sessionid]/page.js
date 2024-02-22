@@ -1,18 +1,31 @@
 'use client'
+// This whole file is such a mess lol
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react'
 import { socket } from '../socket'
 
 // TODO: only the lobby creator should see the 'start game' button
-export default function Game({params}) {
+export default function Game({ params }) {
   const searchParams = useSearchParams();
   const userName = searchParams.get('username');
   const roomKey = params.sessionid;
+
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [users, setUsers] = useState([]);
-  const [movies, setMovies] = useState([]);
   const [showLobby, setShowLobby] = useState(true);
-  const [showGame, setShowGame] = useState(false);
+
+  const [movies, setMovies] = useState([]);
+  const [index, setIndex] = useState(0);
+
+  const onClick = (vote) => {
+    //socket.emit("register_vote", { title : { title }, vote : { vote } })
+    if ( index < movies.length - 1 ) {
+      setIndex(index + 1);
+    } else {
+      console.log("We out of movies bro!!");
+    }
+  }
+  
 
   useEffect(() => {
     function onConnect() {
@@ -31,9 +44,19 @@ export default function Game({params}) {
     }
     
     function onStartGame(data) {
-      setShowLobby(false);
-      setShowGame(true);
       // get the movie data and do the game
+      //alert(data.seed);
+      //const movies = getMovies(data.seed); 
+      //fetch(`/api/movies?seed=${data.seed}`).then(response => response.json()).then(json => alert(json[0].title));
+      //alert(movies);
+      //setMovies(movies);
+      //fetch(`/api/movies?seed=${data.seed}`).then(response => response.json()).then(movies => setMovies(movies));//alert(json[0].title));
+      fetch(`/api/movies?seed=${data.seed}`)
+        .then(response => response.json())
+        .then(movies => setMovies(movies))
+        .then(() => setShowLobby(false));
+        //.then(movies => alert(movies));
+      //setShowLobby(false);
     }
     
     socket.on('connect', onConnect);
@@ -54,12 +77,24 @@ export default function Game({params}) {
   }, []); 
 
 
+  // replace null with game once ready?
+  /*return (
+    <>
+      <h1>Session: {roomKey}</h1> 
+      {showLobby ? <Lobby users={ users }/> : null}
+    </>
+  );*/
   return (
     <>
       <h1>Session: {roomKey}</h1>
-      <Lobby users={users}/>
+      <Lobby users={ users }/>
+      <h1>Movies</h1> 
+      {showLobby ? null : <MovieCard title={ movies[index].title } year={ movies[index].year } onClick={ onClick }/>}
+      <h1>Movies Debug</h1>
+      <MoviesDebug movies={ movies }/>
     </>
-  );
+    
+  )
 }
 
 function Lobby({ users }) {
@@ -72,7 +107,6 @@ function Lobby({ users }) {
       </ul>
       <button onClick={ onClick }>Start Game</button>
     </>
-    
   );
 }
 
@@ -80,22 +114,28 @@ function Participant({ userName }) {
   return <li key={ userName }> { userName } </li>
 }
 
-// TODO: think of good name
-function Thingo({ movies, index }) {
-  var movie = movies[index];
-
-  return (
-    <MovieCard title={ movie.year } year={ movie.year }/>
-  );
-}
-
-function MovieCard({ title, year }) {
+function MovieCard({ title, year, onClick }) {
   return (
     <div>
       <p>{ title }</p>
       <p>{ year }</p>
-      <button>yes</button>
-      <button>no</button>
+      <button onClick={ () => onClick(true) }>yes</button>
+      <button onClick={ () => onClick(false) }>no</button>
     </div>
+  );
+}
+
+// Debug list movies get rid of this when everything works
+function MoviesDebug({ movies }) {
+  return (
+    <ul>
+      {movies.map((movie) => <MovieCardDebug title={ movie.title } year={ movie.year }/>)}
+    </ul>
+  );
+}
+
+function MovieCardDebug({ title, year }) {
+  return (
+    <p> Title: { title } Year: { year } </p>
   );
 }
