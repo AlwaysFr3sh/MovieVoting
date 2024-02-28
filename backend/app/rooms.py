@@ -55,10 +55,12 @@ class Room():
 
 # TODO : RoomTracker is currently coupled to sio object, should it be?
 class RoomTracker():
+  """
   def __init__(self, sio: socketio.Server):
     self.rooms = {}
     self.sio = sio # is this bad???
-
+  """
+  rooms = {}
   def create_room(self) -> str:
     room_key = RoomKeyTracker().new_key()
     self.rooms[room_key] = Room(room_key)
@@ -67,12 +69,12 @@ class RoomTracker():
   # Currently assumes the room exists
   def enter(self, sid: str, room_key: str) -> set:
     self.rooms[room_key].add_member(sid)
-    self.sio.enter_room(sid, room_key)
+    #self.sio.enter_room(sid, room_key)
     return self.rooms[room_key].get()
   
   def leave(self, sid: str, room_key: str) -> set:
     self.rooms[room_key].remove_member(sid)
-    self.sio.leave_room(sid, room_key)
+    #self.sio.leave_room(sid, room_key)
     if self.rooms[room_key].is_empty():
       RoomKeyTracker().recycle_key(room_key)
       return self.rooms.pop(room_key).get()
