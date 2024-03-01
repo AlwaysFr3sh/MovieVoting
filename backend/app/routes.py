@@ -18,9 +18,9 @@ def get_movies(ids: tuple):
 @routes.route("/movies", methods=["GET"])
 def movies():
   seed = request.args.get("seed")
-  random.seed(seed)
+  r = random.Random(seed)
   id_range = get_id_range()[0]["MAX(id)"]
-  ids = random.sample(range(1, id_range), 5)
+  ids = r.sample(range(1, id_range), 5)
   movies = get_movies(ids)
   return movies 
 

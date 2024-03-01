@@ -1,6 +1,6 @@
 # could probably think of a better name for this
 import socketio
-from random import randrange
+from random import randrange 
 from .rooms import RoomTracker
 
 class Namespace(socketio.Namespace):
@@ -10,7 +10,6 @@ class Namespace(socketio.Namespace):
   def on_disconnect(self, sid):
     rooms_to_leave = [room for room in self.rooms(sid) if room != sid]
     for room in rooms_to_leave:
-      # room_members = [get_username(member_sid) for member_sid in self.room_tracker.leave(sid, room)]
       room_members = [self.get_username(member_sid) for member_sid in RoomTracker().leave(sid, room)]
       self.leave_room(sid, room)
       self.emit("update_lobby", {"members" : room_members}, room=room, skip_sid=sid)
@@ -32,9 +31,9 @@ class Namespace(socketio.Namespace):
 
   def on_register_vote(self, sid, data):
     title, vote = data["title"], data["vote"]
-    room_key = [room for room in self.rooms(sid) if room != sid]
+    room_key = [room for room in self.rooms(sid) if room != sid][0]
     if RoomTracker().submit_vote(sid, room_key, title, vote):
-      sio.emit("pick_movie", {"title" : title}, room=room_key)
+      self.emit("pick_movie", {"title" : title}, room=room_key)
   
   def enter_room(self, sid, room, namespace=None):
     return self.server.enter_room(sid, room, namespace=namespace or self.namespace)

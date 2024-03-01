@@ -1,22 +1,18 @@
 import socketio
+from sqids import Sqids
 
-# Method naming could be better?
-# This class is bad, plz fix (all of them are kinda bad lol, i am a bad ooper)
-# TODO: change to sets?
 class RoomKeyTracker():
-  keys = [0] 
-  available_rooms = []
-  
-  def new_key(self) -> str:
-    new_key = max(self.keys) + 1 if not self.available_rooms else self.available_rooms.pop()
-    self.keys.append(new_key)
-    return str(new_key)
-  
-  def recycle_key(self, room_key: str) -> None:
-    room_key = int(room_key)
-    self.keys.remove(room_key)
-    self.available_rooms.append(room_key)
+  keys = set()
+  sqids = Sqids(min_length=4)
 
+  def new_key(self) -> str:
+    if keys:
+      new_key = max(self.keys)
+    else:
+      new_key = 0
+
+    self.keys.add(new_key)
+    return sqids.encode([new_key])
 
 # TODO: Room should return something for add and remove to let us know if the operation was successful maybe???
 class Room():
@@ -40,9 +36,7 @@ class Room():
   def is_empty(self) -> bool: return len(self.members) <= 0
   def count(self) -> int: return len(self.members)
 
-  # this is ugly, very ugly, I want this to be one liner
   def submit_vote(self, title: str, vote: bool) -> None: 
-    #self.votes[title] += vote if title in self.votes else self.votes[title] = int(vote)
     if self.locked: 
       if title in self.votes.keys():
         self.votes[title] += int(vote)
@@ -53,14 +47,9 @@ class Room():
 
   def consensus_reached(self, title: str) -> bool: return self.votes[title] >= self.count()
 
-# TODO : RoomTracker is currently coupled to sio object, should it be?
 class RoomTracker():
-  """
-  def __init__(self, sio: socketio.Server):
-    self.rooms = {}
-    self.sio = sio # is this bad???
-  """
   rooms = {}
+
   def create_room(self) -> str:
     room_key = RoomKeyTracker().new_key()
     self.rooms[room_key] = Room(room_key)
@@ -69,15 +58,10 @@ class RoomTracker():
   # Currently assumes the room exists
   def enter(self, sid: str, room_key: str) -> set:
     self.rooms[room_key].add_member(sid)
-    #self.sio.enter_room(sid, room_key)
     return self.rooms[room_key].get()
   
   def leave(self, sid: str, room_key: str) -> set:
     self.rooms[room_key].remove_member(sid)
-    #self.sio.leave_room(sid, room_key)
-    if self.rooms[room_key].is_empty():
-      RoomKeyTracker().recycle_key(room_key)
-      return self.rooms.pop(room_key).get()
     return self.rooms[room_key].get()
   
   def start_game(self, room_key: str) -> None:
