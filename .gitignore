@@ -1,4 +1,4 @@
 .DS_Store
 backend/AmericanMovies2.txt
 backend/__pycache__/*
-backend/app/__pycache/*
+backend/app/__pycache__/*

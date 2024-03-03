@@ -26,5 +26,5 @@ def movies():
 
 @routes.route('/create_room', methods=['POST'])
 def create_room():
-  room_key = RoomTracker().create_room()
+  room_key = RoomTracker().create()
   return {"room_key" : room_key}

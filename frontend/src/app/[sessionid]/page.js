@@ -4,6 +4,8 @@ import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react'
 import { socket } from '../socket'
 
+import styles from './styles.module.css'
+
 // TODO: only the lobby creator should see the 'start game' button
 export default function Game({ params }) {
   const searchParams = useSearchParams();
@@ -98,18 +100,20 @@ function Lobby({ users, roomKey }) {
   const onClick = () => socket.emit("start_game");
 
   return (
-    <>
+    <div className={ styles.lobby }>
       <h1>Session: {roomKey}</h1>
       <ul>
         {users.map((user) => <Participant userName={ user } />)}
       </ul>
-      <button onClick={ onClick }>Start Game</button>
-    </>
+      <div className={ styles.bottom }>
+        <button onClick={ onClick }>Start Game</button>
+      </div>
+    </div>
   );
 }
 
 function Participant({ userName }) {
-  return <li key={ userName }> { userName } </li>
+  return <li key={ userName }><p>{ userName }</p></li>
 }
 
 function MovieCard({ title, year, onClick }) {
