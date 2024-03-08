@@ -44,6 +44,7 @@ export default function Game({ params }) {
 
     function onUpdateLobby(data) {
       setUsers(data.members);
+      console.log(users);
     }
     
     function onStartGame(data) {
@@ -140,8 +141,6 @@ function GameOver({title, year}) {
 TODO:
 
 CLIENT:
--------------------------------------------------
-# Server side create room page
 -------------------------------------------------
 # Disable input & buttons while loading
 -------------------------------------------------

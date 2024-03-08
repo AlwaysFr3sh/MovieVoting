@@ -4,10 +4,7 @@ from .rooms import RoomTracker
 
 class Namespace(socketio.Namespace):
   def on_connect(self, sid, environ):
-    username = environ.get("HTTP_X_USERNAME")
-    with self.session(sid) as session:
-      session["username"] = username
-    print(f"connected: {username} : {sid}")
+    print(f"connected: {sid}")
 
   def on_disconnect(self, sid):
     rooms_to_leave = [room for room in self.rooms(sid) if room != sid]
@@ -18,8 +15,10 @@ class Namespace(socketio.Namespace):
     print(f"Disconnected: {sid}")
 
   def on_join_room(self, sid, data):
-    room_key = data["room_key"]
+    username, room_key = data["username"], data["room_key"]
     if RoomTracker().exists(room_key):
+      with self.session(sid) as session:
+        session["username"] = username
       sids = list(RoomTracker().enter(sid, room_key))
       self.enter_room(sid, room_key)
       room_members = [self.get_username(member_sid) for member_sid in sids]
