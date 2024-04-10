@@ -23,7 +23,7 @@ export default function Game({ params }) {
 
   const onClick = (vote) => {
     if ( index < movies.length - 1 ) {
-      socket.emit("register_vote", { "title" : movies[index].title , "vote" : vote })
+      socket.emit("register_vote", { "movie_id" : movies[index].id , "vote" : vote })
       setIndex(index + 1);
     } else {
       // TODO: figure out what to do in this scenario
@@ -72,6 +72,7 @@ export default function Game({ params }) {
     socket.on("pick_movie", onPickMovie);
 
     socket.connect();
+    console.log("HERE")
     socket.emit("join_room", {"username": userName, "room_key": roomKey});
 
     return () => {

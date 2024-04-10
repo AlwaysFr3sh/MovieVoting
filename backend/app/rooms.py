@@ -86,7 +86,66 @@ class RoomTracker():
     return room in self.rooms.keys()
 
 
+#------------------------------------------------
+# Redis Replacement code because in-memory probably won't work because 
+# gunicorn is gonna parallel this b*tch
 
 
 
 
+
+if __name__ == "__main__":
+
+  import sqlite3
+  from db_utils import make_dicts
+
+  db = sqlite3.connect("../movies.db")
+  db.row_factory = make_dicts
+
+  query = "INSERT INTO games (status) VALUES (?)"
+  cursor = db.execute(query, (0,))
+  my_id = cursor.lastrowid
+  db.commit()
+  db.close()
+
+  print(f"Raw id: {my_id}, game-pin: {RoomKeyTracker.sqids.encode([my_id])}")
+  """
+
+  from mongoengine import EmbeddedDocument, Document, StringField, IntField, BooleanField, ListField, EmbeddedDocumentField
+
+  class User(EmbeddedDocument):
+    sid = StringField(required=True)
+    username = StringField(required=True)
+  
+  class MovieVote(EmbeddedDocument):
+    title = StringField(required=True)
+    count = IntField(default=lambda: 0)
+
+  class Game(Document):
+    started = BooleanField(default=lambda: False)
+    members = ListField(EmbeddedDocumentField(User), default=list)
+    votes = ListField(EmbeddedDocumentField(MovieVote), default=list) 
+
+  from mongoengine import connect, disconnect
+
+  uri = "mongodb+srv://tomhollo123:2YIBkU3aFk4f80dD@cluster0.fzxqnt6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+  connect(host=uri)
+  print("Woo Hoo! Connected")
+
+  game = Game(
+    members=[
+        User(sid="12345", username="Tom"),
+        User(sid="67890", username="Ashley")
+      ], 
+      votes=[
+        MovieVote(title="Star Wars", count=2), 
+        MovieVote(title="Kung Fu Panda", count=1)
+      ]
+    )
+  game.save()
+  
+  print(game.to_json())
+
+
+  disconnect()
+  """

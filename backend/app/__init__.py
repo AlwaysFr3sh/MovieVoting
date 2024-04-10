@@ -1,36 +1,27 @@
 import socketio
 from flask import Flask, g, request
-from app.routes import routes 
-from app.events import Namespace
+from .routes import routes 
+from .events import Namespace
 
 flask_app = Flask(__name__)
 flask_app.register_blueprint(routes)
-sio = socketio.Server(cors_allowed_origins="http://localhost:3000")
-sio.register_namespace(Namespace("/test"))
+
+from . import db_utils
+#db_utils.init_app(flask_app)
+@flask_app.teardown_appcontext
+def teardown_db(exception):
+  db_utils.close_db()
+
+sio = socketio.Server(cors_allowed_origins="*")
+sio.register_namespace(Namespace(flask_app, namespace="/test"))
+#sio.register_namespace(TestNamespace(namespace="/test"))
 app = socketio.WSGIApp(sio, flask_app)
 
-# TODO: is this working??
-@flask_app.teardown_appcontext
-def close_connection(exception):
-  db = getattr(g, '_database', None)
-  if db is not None:
-    db.close()
 
 """
-SERVER:
--------------------------------------------------
-[ ] Room keys:
-store room key manager class in session object so 
-we aren't screwed by multithreading nonsense
+Note to self:
 
-Do same thing with other room management object or put in Redis or something
--------------------------------------------------
-[ ] Robust Reconnections
-I have no idea how this will turn out
--------------------------------------------------
-[ ] Username should be give on connection
--------------------------------------------------
-[ ] Unit Tests for rooms.py
--------------------------------------------------
--------------------------------------------------
+React in dev mode (strict mode) renders components twice, 
+
+this is why socket endpoints are being called twice
 """

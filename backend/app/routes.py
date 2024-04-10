@@ -1,7 +1,9 @@
 import random
 from flask import Blueprint, request
 from .db_utils import query_db
+
 from .rooms import RoomTracker
+from .games import GameService
 
 routes = Blueprint('movies', __name__)
 
@@ -26,5 +28,6 @@ def movies():
 
 @routes.route('/create_room', methods=['POST'])
 def create_room():
-  room_key = RoomTracker().create()
+  #room_key = RoomTracker().create()
+  room_key = GameService().create_game()
   return {"room_key" : room_key}

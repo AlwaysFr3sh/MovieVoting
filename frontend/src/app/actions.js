@@ -21,4 +21,3 @@ export async function createRoom( formData ) {
   const userName = formData.get("username");
   redirect(`/${ roomKey }?username=${ userName }`);
 }
-
