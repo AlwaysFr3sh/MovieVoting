@@ -18,6 +18,11 @@ def query_db(query, args=(), one=False):
   cursor.close()
   return (rv[0] if rv else None) if one else rv
 
+def upsert_db(query, args=()):
+  db = get_db()
+  db.execute(query, args)
+  db.commit()
+
 def close_db():
   db = getattr(g, '_database', None)
   print("Closing db...", flush=True)
