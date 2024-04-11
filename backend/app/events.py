@@ -12,16 +12,16 @@ class Namespace(socketio.Namespace):
     super().__init__(namespace=namespace)
     self.app = app
   
-  def appcontext(foo):
-    def magic(self, *args, **kwargs):
+  def app_context(foo):
+    def app_context_wrapper(self, *args, **kwargs):
       with self.app.app_context():
         return foo(self, *args, **kwargs)
-    return magic
+    return app_context_wrapper
 
   def on_connect(self, sid, environ):
     print(f"connected: {sid}")
 
-  @appcontext
+  @app_context
   def on_disconnect(self, sid):
     rooms_to_leave = [room for room in self.rooms(sid) if room != sid]
     for room in rooms_to_leave:
@@ -30,15 +30,14 @@ class Namespace(socketio.Namespace):
       self.emit('update_lobby', {"members" : room_members}, room=room, skip_sid=sid)
     print(f"Disconnected: {sid}")
   
-  @appcontext
+  @app_context
   def on_join_room(self, sid, data):
-    #with self.app.app_context():
     username, room = data["username"], data["room_key"]
     try:
       game = GameService().get_game(room)
       print(game)
       if game['status'] != 0:
-        raise Exception("AHHHH")
+        raise Exception("Cannot join, the game has started")
 
       self.enter_room(sid, room)
       self.set_username(sid, username)
@@ -48,18 +47,17 @@ class Namespace(socketio.Namespace):
 
     except Exception as e:
       print(f"ERROR: {e}")
-      #self.emit("exception", "Room does not exist", room=sid)
-      # TODO: emit something when the room does not exist so that the client knows
+      self.emit("error", {"message" : f"Error: {e}"}, room=room)
       # TODO: use a logger??
   
   # TODO: only the game creator can start
-  @appcontext
+  @app_context
   def on_start_game(self, sid):
     room = [room for room in self.rooms(sid) if room != sid][0]
     GameService().start_game(room)
     self.emit("start_game", {"seed" : randrange(999)}, room=room)
   
-  @appcontext
+  @app_context
   def on_register_vote(self, sid, data):
     movie_id = data["movie_id"]
     room = [room for room in self.rooms(sid) if room != sid][0]

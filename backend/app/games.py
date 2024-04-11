@@ -2,6 +2,7 @@
 from sqids import Sqids
 from .db_utils import get_db, query_db, upsert_db
 
+# TODO: consider lifting db stuff out and separating from business logic with an ORM or something
 class GameService():
 
   sqids = Sqids(min_length=4)
@@ -20,8 +21,7 @@ class GameService():
     # return a set of the sids that belong to the game-pin we've been given
     game_pin = self.sqids.decode(game_pin)[0]
     upsert_db("INSERT INTO users (socketid, username, game_pin) VALUES (?, ?, ?)", (sid, username, game_pin))
-    query = "SELECT (socketid) FROM users WHERE game_pin=(?)"
-    members = query_db(query, (game_pin,))
+    members = query_db("SELECT (socketid) FROM users WHERE game_pin=(?)", (game_pin,))
     return members
 
   def leave_game(self, sid: str, game_pin: str) -> list:
@@ -29,8 +29,7 @@ class GameService():
     # return members from game
     game_pin = self.sqids.decode(game_pin)[0]
     upsert_db("DELETE FROM users WHERE socketid=(?)", (sid,))
-    query = "SELECT (socketid) FROM users WHERE game_pin=(?)"
-    members = query_db(query, (game_pin,))
+    members = query_db("SELECT (socketid) FROM users WHERE game_pin=(?)", (game_pin,))
     return members
 
   def start_game(self, game_pin: str) -> None:
@@ -44,7 +43,7 @@ class GameService():
     if len(query_db("SELECT * FROM votes WHERE movie_id=(?) AND game_pin=(?)", (movie_id, game_pin))) > 0:
       query = """
               UPDATE votes
-              SET count = CASE WHEN (?) IN (SELECT socketid FROM users where game_pin = (?)) THEN count+1 ELSE count END
+              SET count = CASE WHEN (?) IN (SELECT socketid FROM users WHERE game_pin = (?)) THEN count+1 ELSE count END
               WHERE movie_id=(?) AND game_pin=(?);
               """
       upsert_db(query, (sid, game_pin, movie_id, game_pin))
@@ -58,9 +57,8 @@ class GameService():
     return count >= len(members)
 
   def get_game(self, game_pin: str) -> bool:
-    query = "SELECT * FROM games WHERE game_pin=(?)"
     game_pin = self.sqids.decode(game_pin)[0]
-    return query_db(query, (game_pin,))[0]
+    return query_db("SELECT * FROM games WHERE game_pin=(?)", (game_pin,))[0]
 
 
 if __name__ == "__main__": 
