@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-import sqlite3 
 import sys
+import os
+from argparse import ArgumentParser
+
+import sqlite3 
+import pandas as pd
+from tqdm import tqdm, trange
 
 # function to scrape american movies from wikipedia using pandas
-def create_movie_list(filename: str, start_year: int, end_year: int) -> None:
-  import pandas as pd
-  from tqdm import trange
-  file = open(filename, "a")
+def create_movie_list_from_wikipedia(filename: str, start_year: int, end_year: int) -> None:
+  f = open(filename, "a")
   for year in range(start_year, end_year):
     print(f"Downloading {year}")
     try:
@@ -18,31 +21,38 @@ def create_movie_list(filename: str, start_year: int, end_year: int) -> None:
     table_range = (3, 7) if year == 2010 else (2, 6)
     for i in trange(*table_range):
       for index, row in df_list[i].iterrows():
-        file.write(f"{row['Title']} *** {year}\n")
+        f.write(f"{row['Title']} *** {year}\n")
 
-  file.close()
+  f.close()
 
-# seed our database using text file created from create_movie_list function
-def seed_database(filename: str, db_name: str = "movies.db") -> None:
+# seed our database using text/csv file created from create_movie_list function
+def seed_database(filename: str, db_name: str) -> None:
   con = sqlite3.connect(db_name) 
   cursor = con.cursor()
   data = []
-  with open(filename, encoding='utf-8') as file:
-    for line in file:
+  print(f"Seeding database: {db_name} with data from from {filename}...")
+  with open(filename, encoding='utf-8') as f:
+    for line in tqdm(f):
       title, year = line.split(" *** ")
       data.append((title, year)) 
-      #print(f"title: {title}, year: {year}")
 
   cursor.executemany("INSERT INTO movies (title, year) VALUES (?, ?)", data)
   con.commit()
   
 
+def main():
+  parser = ArgumentParser(
+    prog="Movie Decider sqlite3 database seeding tool",
+    description="Movie Decider sqlite3 database seeding tool",
+  )
+  parser.add_argument("-f", "--filename", required=False, default="AmericanMovies.txt")
+  parser.add_argument("-d", "--dbname", required=False, default="movies.db")
+  parser.add_argument("-s", "--start_year", required=False, choices=range(1970, 2024), default=1970)
+  parser.add_argument("-e", "--end_year",  required=False, choices=range(1970, 2024), default=1970)
+  args = parser.parse_args()
+  if not os.path.isfile(args.filename): create_movie_list_from_wikipedia(args.filename, args.start_year, args.end_year)
+  seed_database(args.filename, )
+  print("Done!")
+
 if __name__ == "__main__":
-  # seed the database (by scraping wikipedia)
-  # this is a bit overkill i think
-  try:
-    filename, start, end = sys.argv[1:4]
-    create_movie_list(filename, int(start), int(end))
-    seed_database(filename)
-  except:
-    print(f"Usage: ./{sys.argv[0]} <filename> <start_year> <end_year>")
+  main()
