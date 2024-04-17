@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import sys
 import os
 from argparse import ArgumentParser
@@ -42,7 +43,7 @@ def seed_database(filename: str, db_name: str) -> None:
 
 def main():
   parser = ArgumentParser(
-    prog="Movie Decider sqlite3 database seeding tool",
+    prog="seed.py",
     description="Movie Decider sqlite3 database seeding tool",
   )
   parser.add_argument("-f", "--filename", required=False, default="AmericanMovies.txt")

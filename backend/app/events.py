@@ -47,8 +47,18 @@ class Namespace(socketio.Namespace):
 
     except Exception as e:
       print(f"ERROR: {e}")
-      self.emit("error", {"message" : f"Error: {e}"}, room=room)
+      self.emit("error", {"message" : f"Error: {e}"}, room=sid)
       # TODO: use a logger??
+
+  @app_context
+  def on_leave_room(self, sid, data):
+    try:
+      room = [room for room in self.rooms(sid) if room != sid][0]
+      GameService().leave_game(sid, room)
+    except Exception as e: 
+      print(f"ERROR: {e}")
+      self.emit("error", {"message" : f"Error: {e}"}, room=sid)
+    
   
   # TODO: only the game creator can start
   @app_context

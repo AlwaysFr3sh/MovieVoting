@@ -14,7 +14,6 @@ def teardown_db(exception):
 
 sio = socketio.Server(cors_allowed_origins="*")
 sio.register_namespace(Namespace(flask_app, namespace="/test"))
-#sio.register_namespace(TestNamespace(namespace="/test"))
 app = socketio.WSGIApp(sio, flask_app)
 
 
