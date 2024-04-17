@@ -1,9 +1,9 @@
 'use client'
 // This whole file is such a mess lol
-import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react'
-import { socket } from '../socket'
-
+import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react"
+import { socket } from "../socket"
+import { EventFactory } from "./events"
 import styles from './styles.module.css'
 
 // TODO: only the lobby creator should see the 'start game' button
@@ -21,9 +21,12 @@ export default function Game({ params }) {
   const [gameOver, setGameOver] = useState(false);
   const [decidedMovie, setDecidedMovie] = useState();
 
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const onClick = (vote) => {
     if ( index < movies.length - 1 ) {
-      socket.emit("register_vote", { "movie_id" : movies[index].id , "vote" : vote })
+      socket.emit("register_vote", { "movie_id" : movies[index].id , "vote" : vote });
       setIndex(index + 1);
     } else {
       // TODO: figure out what to do in this scenario
@@ -32,59 +35,37 @@ export default function Game({ params }) {
   }
 
   useEffect(() => {
-    function onConnect() {
-      setIsConnected(true);
-      console.log("Connected");
-    }
-
-    function onDisconnect() {
-      setIsConnected(false);
-      console.log("Disconnected");
-    }
-
-    function onUpdateLobby(data) {
-      setUsers(data.members);
-      console.log(users);
-    }
+    const events = new EventFactory();
     
-    function onStartGame(data) {
-      fetch(`/api/movies?seed=${data.seed}`)
-        .then(response => response.json())
-        .then(movies => setMovies(movies))
-        .then(() => setShowLobby(false));
-    }
+    socket.on("connect", events.onConnect(setIsConnected));
+    socket.on("disconnect", events.onDisconnect(setIsConnected));
+    socket.on("update_lobby", events.onUpdateLobby(setUsers));
+    socket.on("start_game", events.onStartGame(setMovies, setShowLobby));
+    socket.on("pick_movie", events.onPickMovie(setGameOver, setDecidedMovie));
+    socket.on("error", events.onError(setError, setErrorMessage));
 
-    function onStartGame2(data) {
-      setMovies(data.movies);
-      setShowLobby(false);
-    }
-
-    function onPickMovie(data) {
-      setGameOver(true); // this var might be not very useful
-      setDecidedMovie(data.title);
-    }
-    
-    socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
-    socket.on('update_lobby', onUpdateLobby);
-    socket.on("start_game", onStartGame);
-    socket.on("start_game2", onStartGame2);
-    socket.on("pick_movie", onPickMovie);
-
-    socket.connect();
-    console.log("HERE")
     socket.emit("join_room", {"username": userName, "room_key": roomKey});
 
     return () => {
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
-      socket.off('update_lobby', onUpdateLobby);
-      socket.off("start_game", onStartGame);
-      socket.off("start_game2", onStartGame2);
-      socket.off("pick_movie", onPickMovie);
+      socket.off("connect", events.onConnect(setIsConnected));
+      socket.off("disconnect", events.onDisconnect(setIsConnected));
+      socket.off("update_lobby", events.onUpdateLobby(setUsers));
+      socket.off("start_game", events.onStartGame(setMovies, setShowLobby));
+      socket.off("pick_movie", events.onPickMovie(setGameOver, setDecidedMovie));
+      socket.off("error", events.onError(setError, setErrorMessage));
     };
 
   }, []); 
+
+  if (error) {
+    // TODO: This always throws because react double executes useEffect in dev mode
+    //throw new Error(errorMessage);
+    console.log("error");
+  }
+
+  if (!isConnected) {
+    throw new Error("Failed to connect to server");
+  }
 
   return (
     <>
@@ -123,6 +104,7 @@ function MovieCard({ title, year, onClick }) {
     <div>
       <p>{ title }</p>
       <p>{ year }</p>
+      <img src="http://img.omdbapi.com/?apikey=32ef71d2&i=tt0076759&h=600"/>
       <button onClick={ () => onClick(true) }>yes</button>
       <button onClick={ () => onClick(false) }>no</button>
     </div>
