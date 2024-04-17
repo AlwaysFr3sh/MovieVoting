@@ -27,7 +27,8 @@ def create_movie_list_from_wikipedia(filename: str, start_year: int, end_year: i
   f.close()
 
 # seed our database using text/csv file created from create_movie_list function
-def seed_database(filename: str, db_name: str) -> None:
+# TODO: naming for this func is pretty rough
+def insert_into_database(filename: str, db_name: str) -> None:
   con = sqlite3.connect(db_name) 
   cursor = con.cursor()
   data = []
@@ -41,19 +42,21 @@ def seed_database(filename: str, db_name: str) -> None:
   con.commit()
   
 
-def main():
+def seed_database():
   parser = ArgumentParser(
     prog="seed.py",
     description="Movie Decider sqlite3 database seeding tool",
   )
+  # seed argument is so we can call this function from flask cli
+  parser.add_argument("seed", nargs="?")
   parser.add_argument("-f", "--filename", required=False, default="AmericanMovies.txt")
   parser.add_argument("-d", "--dbname", required=False, default="movies.db")
   parser.add_argument("-s", "--start_year", required=False, choices=range(1970, 2024), default=1970)
   parser.add_argument("-e", "--end_year",  required=False, choices=range(1970, 2024), default=1970)
   args = parser.parse_args()
-  if not os.path.isfile(args.filename): create_movie_list_from_wikipedia(args.filename, args.start_year, args.end_year)
-  seed_database(args.filename, )
+  #if not os.path.isfile(args.filename): create_movie_list_from_wikipedia(args.filename, args.start_year, args.end_year)
+  #insert_into_database(args.filename, args.dbname)
   print("Done!")
 
 if __name__ == "__main__":
-  main()
+  seed_database()

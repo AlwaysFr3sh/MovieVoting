@@ -2,9 +2,11 @@ import socketio
 from flask import Flask, g, request
 from .routes import routes 
 from .events import Namespace
+from .commands import commands
 
 flask_app = Flask(__name__)
 flask_app.register_blueprint(routes)
+flask_app.register_blueprint(commands)
 
 from . import db_utils
 #db_utils.init_app(flask_app)
@@ -15,6 +17,7 @@ def teardown_db(exception):
 sio = socketio.Server(cors_allowed_origins="*")
 sio.register_namespace(Namespace(flask_app, namespace="/test"))
 app = socketio.WSGIApp(sio, flask_app)
+
 
 
 """
