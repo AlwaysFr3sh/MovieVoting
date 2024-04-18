@@ -54,8 +54,8 @@ def seed_database():
   parser.add_argument("-s", "--start_year", required=False, choices=range(1970, 2024), default=1970)
   parser.add_argument("-e", "--end_year",  required=False, choices=range(1970, 2024), default=1970)
   args = parser.parse_args()
-  #if not os.path.isfile(args.filename): create_movie_list_from_wikipedia(args.filename, args.start_year, args.end_year)
-  #insert_into_database(args.filename, args.dbname)
+  if not os.path.isfile(args.filename): create_movie_list_from_wikipedia(args.filename, args.start_year, args.end_year)
+  insert_into_database(args.filename, args.dbname)
   print("Done!")
 
 if __name__ == "__main__":

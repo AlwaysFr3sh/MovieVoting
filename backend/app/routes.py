@@ -17,6 +17,23 @@ def get_movies(ids: tuple):
   query = query.format(placeholders)
   return query_db(query, ids)
 
+
+"""
+TODO: 
+
+store a the random seed in the database on 
+game creation
+
+instead of doing what we do now
+
+do an ORDER BY SIN(id + seed) query to get our random results (consistently)
+
+Here is the forum posts referenced for this idea, delete this comment when implemented
+
+https://www.sqlite.org/forum/forumpost/e2216583a4
+https://stackoverflow.com/questions/1253561/sqlite-order-by-rand/75089040#75089040
+
+"""
 @routes.route("/movies", methods=["GET"])
 def movies():
   seed = request.args.get("seed")
