@@ -104,7 +104,7 @@ function MovieCard({ title, year, onClick }) {
     <div>
       <p>{ title }</p>
       <p>{ year }</p>
-      <img src="http://img.omdbapi.com/?apikey=32ef71d2&i=tt0076759&h=600"/>
+      <img src="http://img.omdbapi.com/?apikey=&i=tt0076759&h=600"/>
       <button onClick={ () => onClick(true) }>yes</button>
       <button onClick={ () => onClick(false) }>no</button>
     </div>
