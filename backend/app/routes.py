@@ -48,3 +48,37 @@ def create_room():
   #room_key = RoomTracker().create()
   room_key = GameService().create_game()
   return {"room_key" : room_key}
+
+# TODO: do i need to escape(data)???
+# TODO: Doesnt work, make it work
+@routes.route("/movies/<string:game_pin>", methods=["GET"])
+def moviess(game_pin):
+  username = request.args.get("username") or "no username"
+
+  # get seed from game table
+  # run query to get random movies
+  # when we port to java this is where we cache
+  # return movies
+
+  # *** Move to game service???
+  query = "SELECT seed FROM games WHERE game_pin=(?)"
+  game_pin = query_db(query, (game_pin,))
+  query = "SELECT * FROM movies ORDER BY SIN((?)) LIMIT (?)"
+  # TODO: game_pin not deserialized, need to do this, might move this code somewhere else such as GameService which would make sense
+  seed = game_pin + seed 
+  # TODO: should this be configurable as url arg? in some config file? or hardcoded?
+  limit = 5
+  movies = query_db(query, (seed, limit))
+  # ***
+
+  test_data = f"game pin: {game_pin}, username: {username}\n"
+  print(test_data)
+  return test_data
+  
+# TODO: should game pin and / or movie id be like this url/<this> or like this /url?this=this?
+#       consider this for the movies endpoint too
+@routes.route("/posters/<string:game_pin>/<string:movie_id>", methods=["GET"])
+def posters(game_pin, movie_id):
+  test_data = f"game pin: {game_pin}, movie id: {movie_id}\n"
+  print(test_data)
+  return test_data

@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS movies (
 -- TODO: add a random_seed integer column to this table
 CREATE TABLE IF NOT EXISTS games (
   game_pin INTEGER PRIMARY KEY AUTOINCREMENT,
-  status INTEGER NOT NULL
+  status INTEGER NOT NULL,
+  seed INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS users (
