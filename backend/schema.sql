@@ -1,9 +1,21 @@
-CREATE TABLE IF NOT EXISTS movies (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+/*CREATE TABLE IF NOT EXISTS movies (
+  --id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id integer PRIMARY KEY, -- imdb id, not storing the tt, hopefully that fine
   title TEXT NOT NULL,
   year INTEGER NOT NULL,
   genre TEXT,
   imdbrating DECIMAL
+);*/
+
+CREATE TABLE IF NOT EXISTS movies (
+  id INTEGER PRIMARY KEY,
+  title TEXT NOT NULL,
+  year INTEGER NOT NULL,
+  genre TEXT,
+  imdbRating DECIMAL,
+  metascore INTEGER,
+  rated TEXT,
+  runtime INTEGER
 );
 
 -- TODO: add a random_seed integer column to this table
