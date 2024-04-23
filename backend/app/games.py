@@ -1,3 +1,7 @@
+import sys
+#from random import randrange
+import random
+
 #from .db_utils import get_db
 from sqids import Sqids
 from .db_utils import get_db, query_db, upsert_db
@@ -8,9 +12,10 @@ class GameService():
   sqids = Sqids(min_length=4)
 
   def create_game(self) -> str:
-    query = "INSERT INTO games (status) VALUES (?)"
+    query = "INSERT INTO games (status, seed) VALUES (?, ?)"
+    seed = randrange(999)
     db = get_db()
-    cursor = db.execute(query, (0,)) # 0 is default status of a game, TODO: add enum to this code for readability (will still just be int in db)
+    cursor = db.execute(query, (0, seed)) # 0 is default status of a game, TODO: add enum to this code for readability (will still just be int in db)
     game_pin = self.sqids.encode([cursor.lastrowid])
     cursor.close()
     db.commit()
@@ -55,6 +60,21 @@ class GameService():
     members = query_db("SELECT * FROM users WHERE game_pin=(?)", (game_pin,))
     count = query_db("SELECT count FROM votes WHERE game_pin=(?) AND movie_id=(?)", (game_pin, movie_id))[0]["count"]
     return count >= len(members)
+  
+  def get_movies(self, game_pin: str, username: str, limit: int):
+    # TODO: verify that username belongs to game
+    # TODO: should probably do verification with sid rather than username
+    # TODO: error handling surrounding existence of a game? code currently assumes game exists
+    # https://gist.github.com/eslof/88492e6a7c2eb90d61748227ab3b3fb1
+    game_pin = self.sqids.decode(game_pin)[0]
+    seed = query_db("SELECT seed from games WHERE game_pin=(?)", (game_pin,), one=True)["seed"]
+    r = random.Random(seed)
+    db = get_db()
+    db.create_collation("seeded_random", lambda s1, s2 : r.randint(-1, 1)) #seeded_random_collation)
+    cursor = db.execute("SELECT * FROM movies ORDER BY CAST(id as TEXT) COLLATE seeded_random LIMIT (?)", (limit,))
+    ret = cursor.fetchall()
+    cursor.close()
+    return ret
 
   def get_game(self, game_pin: str) -> bool:
     game_pin = self.sqids.decode(game_pin)[0]

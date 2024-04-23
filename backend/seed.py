@@ -50,9 +50,9 @@ def insert_into_database(movies: List[tuple], db_name: str) -> None:
   for title, year in tqdm(movies):
     d = omdb(title, year, omdb_api_key)
     query = """
-    INSERT INTO movies (id, title, year, genre, imdbRating, metascore, rated, runtime)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """
+            INSERT INTO movies (id, title, year, genre, imdbRating, metascore, rated, runtime)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """
     
     if d["Response"].strip() == "True":
       args = (d["imdbID"].replace("tt", ""), 
