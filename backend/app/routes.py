@@ -1,6 +1,8 @@
 import random
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_file
 from .db_utils import query_db
+import requests
+import io
 
 from .rooms import RoomTracker
 from .games import GameService
@@ -38,7 +40,7 @@ def create_room():
 # TODO: do i need to escape(data)???
 # TODO: Doesnt work, make it work
 @routes.route("/movies/<string:game_pin>", methods=["GET"])
-def moviess(game_pin):
+def movies(game_pin):
   limit = 5
   username = request.args.get("username") or None
   if username is None: raise RouteException("Missing Argument <username>", status_code=400)
@@ -50,6 +52,16 @@ def moviess(game_pin):
 #       consider this for the movies endpoint too
 @routes.route("/posters/<string:game_pin>/<string:movie_id>", methods=["GET"])
 def posters(game_pin, movie_id):
-  test_data = f"game pin: {game_pin}, movie id: {movie_id}\n"
-  print(test_data)
-  return test_data
+  # validate game pin and stuff
+  username = request.args.get("username") or None
+  # TODO: we can either get api key from ENV var, load from config at startup or read from file for every request like this (dumb I think)
+  from seed import omdb_key
+  r = requests.get(f"http://img.omdbapi.com/?apikey={omdb_key()}&i=tt{movie_id}&h=600")
+  # TODO: should I return json or html for error here?
+  if r.status_code != 200: raise RouteException("insert an error msg here", status_code=r.status_code)
+  return send_file(
+    io.BytesIO(r.content),
+    mimetype="image/png"
+  )
+
+
