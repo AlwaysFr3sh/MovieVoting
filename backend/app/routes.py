@@ -33,7 +33,6 @@ def handle_exception(error):
 # TODO: scheduled for demolition
 @routes.route('/create_room', methods=['POST'])
 def create_room():
-  #room_key = RoomTracker().create()
   room_key = GameService().create_game()
   return {"room_key" : room_key}
 
@@ -41,24 +40,23 @@ def create_room():
 # TODO: Doesnt work, make it work
 @routes.route("/movies/<string:game_pin>", methods=["GET"])
 def movies(game_pin):
+  # this should maybe be in a config or configurable by the user or something
   limit = 5
-  username = request.args.get("username") or None
-  if username is None: raise RouteException("Missing Argument <username>", status_code=400)
   # Do caching of movie data if we ever feel like it (probably when we move to spring boot) 
-  movies = GameService().get_movies(game_pin, username, limit)
+  movies = GameService().get_movies(game_pin, limit)
   return movies
   
 # TODO: should game pin and / or movie id be like this url/<this> or like this /url?this=this?
 #       consider this for the movies endpoint too
-@routes.route("/posters/<string:game_pin>/<string:movie_id>", methods=["GET"])
+@routes.route("/posters/<string:game_pin>/<int:movie_id>", methods=["GET"])
 def posters(game_pin, movie_id):
-  # validate game pin and stuff
-  username = request.args.get("username") or None
+  valid_ids = [m["id"] for m in GameService().get_movies(game_pin, 6)]
+  if movie_id not in valid_ids: raise RouteException("Unauthorized", status_code=401)
   # TODO: we can either get api key from ENV var, load from config at startup or read from file for every request like this (dumb I think)
   from seed import omdb_key
   r = requests.get(f"http://img.omdbapi.com/?apikey={omdb_key()}&i=tt{movie_id}&h=600")
   # TODO: should I return json or html for error here?
-  if r.status_code != 200: raise RouteException("insert an error msg here", status_code=r.status_code)
+  if r.status_code != 200: raise RouteException("Something went wrong", status_code=r.status_code)
   return send_file(
     io.BytesIO(r.content),
     mimetype="image/png"

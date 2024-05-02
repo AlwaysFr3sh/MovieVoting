@@ -61,8 +61,7 @@ class GameService():
     count = query_db("SELECT count FROM votes WHERE game_pin=(?) AND movie_id=(?)", (game_pin, movie_id))[0]["count"]
     return count >= len(members)
   
-  def get_movies(self, game_pin: str, username: str, limit: int):
-    # TODO: verify that username belongs to game
+  def get_movies(self, game_pin: str, limit: int, rows: str="*"):
     # TODO: should probably do verification with sid rather than username
     # TODO: error handling surrounding existence of a game? code currently assumes game exists
     # https://gist.github.com/eslof/88492e6a7c2eb90d61748227ab3b3fb1
@@ -71,43 +70,14 @@ class GameService():
     r = random.Random(seed)
     db = get_db()
     db.create_collation("seeded_random", lambda s1, s2 : r.randint(-1, 1)) #seeded_random_collation)
-    cursor = db.execute("SELECT * FROM movies ORDER BY CAST(id as TEXT) COLLATE seeded_random LIMIT (?)", (limit,))
+    #cursor = db.execute("SELECT * FROM movies ORDER BY CAST(id as TEXT) COLLATE seeded_random LIMIT (?)", (limit,))
+    # TODO: is the format string here secure?
+    cursor = db.execute(f"SELECT {rows} FROM movies ORDER BY CAST(id as TEXT) COLLATE seeded_random LIMIT (?)", (limit,))
     ret = cursor.fetchall()
     cursor.close()
-    print("hererr")
     return ret
 
   def get_game(self, game_pin: str) -> bool:
     game_pin = self.sqids.decode(game_pin)[0]
     return query_db("SELECT * FROM games WHERE game_pin=(?)", (game_pin,))[0]
 
-
-if __name__ == "__main__": 
-  import sqlite3
-  from db_utils import make_dicts
-
-  db = sqlite3.connect("../movies.db")
-  db.row_factory = make_dicts
-
-  def query_db(query, args=(), one=False):
-    cursor = db.execute(query, args)
-    rv = cursor.fetchall()
-    cursor.close()
-    return (rv[0] if rv else None) if one else rv
-
-  game_pin = 1
-  movie_id = 1
-
-  query = "UPDATE votes SET count = CASE WHEN (?) IN (SELECT socketid FROM users where game_pin = (?)) THEN count+1 ELSE count END WHERE movie_id=(?) AND game_pin=(?);"
-  db.execute(query, (123, game_pin, movie_id, game_pin))
-  db.commit()
-
-  query = "SELECT * FROM users WHERE game_pin=(?)"
-  members = query_db(query, (game_pin,))
-  query = "SELECT count FROM votes WHERE game_pin=(?) AND movie_id=(?)"
-  count = query_db(query, (game_pin, movie_id))[0]["count"]
-  print(f"The number of members in the room is {len(members)} and the number who voted for {movie_id} is {count}") 
-  print(count >= len(members))
-
-
-  db.close()
