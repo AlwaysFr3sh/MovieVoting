@@ -1,0 +1,6 @@
+flask
+python-socketio
+sqids
+gunicorn
+pandas
+tqdm
