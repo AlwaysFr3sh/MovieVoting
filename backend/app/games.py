@@ -61,7 +61,7 @@ class GameService():
     count = query_db("SELECT count FROM votes WHERE game_pin=(?) AND movie_id=(?)", (game_pin, movie_id))[0]["count"]
     return count >= len(members)
   
-  def get_movies(self, game_pin: str, limit: int, rows: str="*"):
+  def get_movies(self, game_pin: str, limit: int=5, rows: str="*"):
     # TODO: should probably do verification with sid rather than username
     # TODO: error handling surrounding existence of a game? code currently assumes game exists
     # https://gist.github.com/eslof/88492e6a7c2eb90d61748227ab3b3fb1

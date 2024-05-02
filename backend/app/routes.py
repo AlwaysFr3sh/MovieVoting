@@ -36,21 +36,20 @@ def create_room():
   room_key = GameService().create_game()
   return {"room_key" : room_key}
 
-# TODO: do i need to escape(data)???
-# TODO: Doesnt work, make it work
-@routes.route("/movies/<string:game_pin>", methods=["GET"])
-def movies(game_pin):
-  # this should maybe be in a config or configurable by the user or something
-  limit = 5
+@routes.route("/movies", methods=["GET"])
+def movies():
+  game_pin = request.args.get("game_pin")
   # Do caching of movie data if we ever feel like it (probably when we move to spring boot) 
-  movies = GameService().get_movies(game_pin, limit)
+  movies = GameService().get_movies(game_pin)
   return movies
   
 # TODO: should game pin and / or movie id be like this url/<this> or like this /url?this=this?
 #       consider this for the movies endpoint too
-@routes.route("/posters/<string:game_pin>/<int:movie_id>", methods=["GET"])
-def posters(game_pin, movie_id):
-  valid_ids = [m["id"] for m in GameService().get_movies(game_pin, 6)]
+#@routes.route("/posters/<string:game_pin>/<int:movie_id>", methods=["GET"])
+@routes.route("/posters/<int:movie_id>", methods=["GET"])
+def posters(movie_id):
+  game_pin = request.args.get("game_pin")
+  valid_ids = [m["id"] for m in GameService().get_movies(game_pin)]
   if movie_id not in valid_ids: raise RouteException("Unauthorized", status_code=401)
   # TODO: we can either get api key from ENV var, load from config at startup or read from file for every request like this (dumb I think)
   from seed import omdb_key
