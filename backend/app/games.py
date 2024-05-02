@@ -13,7 +13,7 @@ class GameService():
 
   def create_game(self) -> str:
     query = "INSERT INTO games (status, seed) VALUES (?, ?)"
-    seed = randrange(999)
+    seed = random.randrange(999)
     db = get_db()
     cursor = db.execute(query, (0, seed)) # 0 is default status of a game, TODO: add enum to this code for readability (will still just be int in db)
     game_pin = self.sqids.encode([cursor.lastrowid])
@@ -74,6 +74,7 @@ class GameService():
     cursor = db.execute("SELECT * FROM movies ORDER BY CAST(id as TEXT) COLLATE seeded_random LIMIT (?)", (limit,))
     ret = cursor.fetchall()
     cursor.close()
+    print("hererr")
     return ret
 
   def get_game(self, game_pin: str) -> bool:

@@ -40,7 +40,8 @@ export default function Game({ params }) {
     socket.on("connect", events.onConnect(setIsConnected));
     socket.on("disconnect", events.onDisconnect(setIsConnected));
     socket.on("update_lobby", events.onUpdateLobby(setUsers));
-    socket.on("start_game", events.onStartGame(setMovies, setShowLobby));
+    //socket.on("start_game", events.onStartGame(setMovies, setShowLobby));
+    socket.on("start_game", events.onStartGame(setMovies, setShowLobby, roomKey, userName))
     socket.on("pick_movie", events.onPickMovie(setGameOver, setDecidedMovie));
     socket.on("error", events.onError(setError, setErrorMessage));
 
@@ -71,7 +72,7 @@ export default function Game({ params }) {
     <>
       {showLobby ?  
         <Lobby users={ users } roomKey={ roomKey }/> : 
-        <MovieCard title={ movies[index].title } year={ movies[index].year } onClick={ onClick }/>
+        <MovieCard title={ movies[index].title } year={ movies[index].year } gamepin={ roomKey } movieid={ "penis" } onClick={ onClick }/>
       }
       {gameOver ? <GameOver title={decidedMovie} year={"who knows"}/> : null}
     </>
@@ -99,12 +100,12 @@ function Participant({ userName }) {
   return <li key={ userName }><p>{ userName }</p></li>
 }
 
-function MovieCard({ title, year, onClick }) {
+function MovieCard({ title, year, gamepin, movieid, onClick }) {
   return (
     <div>
       <p>{ title }</p>
       <p>{ year }</p>
-      <img src="http://img.omdbapi.com/?apikey=&i=tt0076759&h=600"/>
+      <img src={ `http://localhost:8000/posters/${gamepin}/${movieid}` }/>
       <button onClick={ () => onClick(true) }>yes</button>
       <button onClick={ () => onClick(false) }>no</button>
     </div>

@@ -10,6 +10,7 @@ export class EventFactory {
   onDisconnect(setIsConnected) {
     return function() {
       console.log("disconnected");
+      setIsConnected(false);
     }
   }
 
@@ -20,13 +21,23 @@ export class EventFactory {
     }
   }
 
-  onStartGame(setMovies, setShowLobby) {
+  /*onStartGame(setMovies, setShowLobby) {
     return function(data) {
       fetch(`/api/movies?seed=${data.seed}`)
         .then(response => response.json())
         .then(movies => setMovies(movies))
         .then(() => setShowLobby(false));
     } 
+  }*/
+
+  // TODO: this one needs some work
+  onStartGame(setMovies, setShowLobby, gamepin, username) {
+    return function() {
+      fetch(`/api/movies/${gamepin}?username=${username}`)
+        .then(response => response.json())
+        .then(movies => setMovies(movies))
+        .then(() => setShowLobby(false));
+    }
   }
 
   onPickMovie(setGameOver, setDecidedMovie) {
