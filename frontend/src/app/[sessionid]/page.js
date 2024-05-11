@@ -105,7 +105,7 @@ function MovieCard({ title, year, gamepin, movieid, onClick }) {
     <div>
       <p>{ title }</p>
       <p>{ year }</p>
-      <img src={ `http://localhost:8000/posters/${gamepin}/${movieid}` }/>
+      <img src={ `http://localhost:8000/posters/${movieid}?game_pin=${gamepin}` }/>
       <button onClick={ () => onClick(true) }>yes</button>
       <button onClick={ () => onClick(false) }>no</button>
     </div>
