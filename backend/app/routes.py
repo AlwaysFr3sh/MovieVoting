@@ -39,6 +39,7 @@ def create_room():
 @routes.route("/movies", methods=["GET"])
 def movies():
   game_pin = request.args.get("game_pin")
+  if game_pin is None: raise RouteException("Todo: add appropriate message here", status_code=404)
   # Do caching of movie data if we ever feel like it (probably when we move to spring boot) 
   movies = GameService().get_movies(game_pin)
   return movies
@@ -49,6 +50,7 @@ def movies():
 @routes.route("/posters/<int:movie_id>", methods=["GET"])
 def posters(movie_id):
   game_pin = request.args.get("game_pin")
+  if game_pin is None: raise RouteException("Todo: add appropriate message here", status_code=404)
   valid_ids = [m["id"] for m in GameService().get_movies(game_pin)]
   if movie_id not in valid_ids: raise RouteException("Unauthorized", status_code=401)
   # TODO: we can either get api key from ENV var, load from config at startup or read from file for every request like this (dumb I think)
