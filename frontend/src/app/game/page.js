@@ -71,7 +71,7 @@ export default function Game() {
     <>
       {showLobby ?  
         <Lobby users={ users } roomKey={ roomKey }/> : 
-        <MovieCard title={ movies[index].title } year={ movies[index].year } gamepin={ roomKey } movieid={ "penis" } onClick={ onClick }/>
+        <MovieCard title={ movies[index].title } year={ movies[index].year } gamepin={ roomKey } movieid={ "penis" } submitVote={ onClick }/>
       }
       {gameOver ? <GameOver title={decidedMovie} year={"who knows"}/> : null}
     </>
